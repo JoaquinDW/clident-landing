@@ -1,0 +1,24 @@
+'use strict';
+const nav = document.getElementById('main-nav');
+const menu = document.querySelector('.menu-toggle');
+function closeMenu(){menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-label','Abrir menú');nav.classList.remove('is-open');}
+menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');nav.classList.toggle('is-open',open);});
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.getAttribute('aria-expanded')==='true'){closeMenu();menu.focus();}});
+window.addEventListener('resize',()=>{if(innerWidth>800)closeMenu();});
+const services=[...document.querySelectorAll('.service')];
+const filters=[...document.querySelectorAll('[data-filter]')];
+filters.forEach(button=>button.addEventListener('click',()=>{const category=button.dataset.filter;filters.forEach(other=>{const active=other===button;other.classList.toggle('active',active);other.setAttribute('aria-pressed',String(active));});let visible=0;services.forEach(service=>{const show=category==='all'||service.dataset.category===category;service.hidden=!show;if(!show)service.open=false;if(show)visible++;});document.getElementById('filter-result').textContent=`${visible} ${visible===1?'especialidad':'especialidades'}`;}));
+document.querySelectorAll('[data-treatment]').forEach(a=>a.addEventListener('click',()=>{document.getElementById('treatment').value=a.dataset.treatment;}));
+const gallery=[{src:'assets/clinica-consultorio.jpg',alt:'Consultorio odontológico de CliDent',caption:'Nuestros consultorios'},{src:'assets/clinica-espera.jpg',alt:'Sala de espera de CliDent con asientos naranjas y plantas',caption:'Un espacio para recibirte'},{src:'assets/clinica-equipamiento.jpg',alt:'Equipamiento odontológico de CliDent',caption:'Equipamiento de la clínica'},{src:'assets/clinica-laboratorio.jpg',alt:'Trabajo de mecánica dental en el laboratorio interno de CliDent',caption:'El laboratorio interno'},{src:'assets/clinica-exterior.jpg',alt:'Entrada de CliDent en 9 de Julio 901',caption:'9 de Julio 901, Corrientes'}];
+let galleryIndex=0;
+function changePhoto(step){galleryIndex=(galleryIndex+step+gallery.length)%gallery.length;const item=gallery[galleryIndex];const photo=document.getElementById('clinic-photo');photo.src=item.src;photo.alt=item.alt;document.getElementById('clinic-caption').textContent=item.caption;document.getElementById('gallery-position').textContent=`${galleryIndex+1} de ${gallery.length}`;}
+document.querySelector('.gallery-prev').addEventListener('click',()=>changePhoto(-1));document.querySelector('.gallery-next').addEventListener('click',()=>changePhoto(1));
+const coverages=[...document.querySelectorAll('#coverage-list li')].map(li=>li.textContent);
+const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+document.getElementById('coverage-search').addEventListener('input',e=>{const query=normalize(e.target.value);const results=document.getElementById('coverage-results');results.replaceChildren();results.hidden=!query;document.querySelector('.coverage-logos').hidden=Boolean(query);if(!query)return;const matches=coverages.filter(c=>normalize(c).includes(query));if(matches.length){matches.forEach(name=>{const span=document.createElement('span');span.textContent=name;results.appendChild(span);});}else{const p=document.createElement('p');p.textContent='No figura en la lista publicada. Escribinos para consultar por tu cobertura.';results.appendChild(p);}});
+const form=document.getElementById('appointment-form');const nameInput=document.getElementById('name');
+nameInput.addEventListener('input',()=>nameInput.setCustomValidity(''));
+nameInput.addEventListener('invalid',()=>{if(!nameInput.value.trim())nameInput.setCustomValidity('Escribí tu nombre para preparar la consulta.');});
+form.addEventListener('submit',e=>{e.preventDefault();nameInput.setCustomValidity('');if(!nameInput.value.trim()){nameInput.setCustomValidity('Escribí tu nombre para preparar la consulta.');nameInput.reportValidity();return;}const treatment=document.getElementById('treatment').value;const message=document.getElementById('message').value.trim();const text=`Hola CliDent, soy ${nameInput.value.trim()}. Quisiera consultar por: ${treatment}.${message?'\n\n'+message:''}`;const url='https://wa.me/5493794624642?text='+encodeURIComponent(text);window.open(url,'_blank','noopener,noreferrer');const status=document.getElementById('form-status');status.replaceChildren(document.createTextNode('Tu consulta está preparada. '));const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Abrir WhatsApp';status.appendChild(a);});
+document.getElementById('year').textContent=new Date().getFullYear();
